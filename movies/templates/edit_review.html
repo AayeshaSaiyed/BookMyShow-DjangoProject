@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Review</title>
+</head>
+<body>
+    <h2>Edit Review - {{ review.movie.title }} </h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+
+        <label >Rating:</label>
+
+        <select name="rating" required>
+            <option value="1" {% if review.rating == 1 %}>selected{% endif %}⭐ 1</option>
+            <option value="2" {% if review.rating == 2 %}>selected{% endif %}⭐ 2</option>
+            <option value="3" {% if review.rating == 3 %}>selected{% endif %}⭐ 3</option>
+            <option value="4" {% if review.rating == 4 %}>selected{% endif %}⭐ 4</option>
+            <option value="5" {% if review.rating == 5 %}>selected{% endif %}⭐ 5</option>
+        </select>
+        <br><br>
+        <label>Your Review:</label><br>
+
+        <textarea name="comment" rows="5" cols="40" required>{{ review.comment }}</textarea>
+        <br><br>
+        <button type="submit">Update Review</button>
+    </form>
+</body>
+</html>

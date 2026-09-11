@@ -1,0 +1,150 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Discovery</title>
+ </head>
+ <body>
+    <h1>Discover Movies</h1>
+
+    <form method="GET">
+        <input type="text" name ="search" placeholder="Search movies..." value = "{{ request.GET.search }}">
+
+        <select name="sort"> 
+            <option value="">Sort By</option>
+            <option value="popular"
+                {% if request.GET.sort == "popular" %} selected {% endif %}>
+                Popularity
+            </option>
+            <option value="newest"
+                {% if request.GET.sort == "newest" %} selected {% endif %}>
+                Newest Realese
+            </option>
+            <option value="rating"
+                {% if request.GET.sort == "rating" %} selected {% endif %}>
+                Rating
+            </option>
+            <option value="price_low"
+                {% if request.GET.sort == "price_low" %} selected {% endif %}>
+                Ticket Price: Low to High
+            </option>
+            <option value="price_high"
+                {% if request.GET.sort == "price_high" %} selected {% endif %}>
+                Ticket Price: High to Low
+            </option>
+       
+        </select>
+        <select name="genre">
+            <option value="">All Genres</option>
+
+            {% for genre in genres %}
+                <option value="{{ genre.id }}"
+                    {% if request.GET.genre == genre.id|stringformat:"s" %}selected{% endif %}>
+                    {{ genre.name }}
+                </option>
+            {% endfor %}       
+        </select>
+
+        <select name="language">
+            <option value="">All Languages</option>
+
+            {% for language in languages %}
+                <option value="{{ language.id }}"
+                {% if request.GET.language == language.id|stringformat:"s" %}selected{% endif %}>
+                {{ language.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="city">
+            <option value="">All Cities</option>
+            {% for theatre in theatres %}
+                <option value="{{ theatre.city }}"
+                    {% if request.GET.city == theatre.city %} selected {% endif %}>
+                    {{ theatre.city }}
+                </option>
+            {% endfor %}
+        </select>
+        <select name="theatre" id="">
+            <option value="">All Theatres</option>
+            {% for  theatre in theatres %}
+                <option value="{{ theatre.id}}"
+                {% if request.GET.theatre == theatre.id|stringformat:"s" %}>selected{% endif %}>
+                {{theatre.name}}
+            </option>
+            {% endfor %}
+        </select>
+<br>
+        <label>Release From:</label>
+        <input type="date" name="release_from" value="{{ request.GET.release_from }}">
+        <label>Release To:</label>
+        <input type="date" name="release_to" value="{{ request.GET.release_to }}">
+
+        <label>Show Time From:</label>
+        <input type="time" name="show_time_from" value="{{ request.GET.show_time_from }}">
+
+        <label>Show Time To:</label>
+        <input type="time" name="show_time_to" value="{{ request.GET.show_time_to }}">
+
+        <label>Minimum Rating:</label>
+        <select name="min_rating">
+            <option value=""Any Rating></option>
+            <option value="1" {% if request.GET.min_rating == "1" %}selected{% endif %}>⭐ 1</option>
+            <option value="1" {% if request.GET.min_rating == "2" %}selected{% endif %}>⭐ 2</option>
+            <option value="1" {% if request.GET.min_rating == "3" %}selected{% endif %}>⭐ 3</option>
+            <option value="1" {% if request.GET.min_rating == "4" %}selected{% endif %}>⭐ 4</option>
+            <option value="1" {% if request.GET.min_rating == "4.5" %}selected{% endif %}>⭐ 4.5+</option>
+        </select>
+
+        <button type="submit">Search</button>
+    </form>
+    <p>
+        {{ movies|length }} movie{{ movies|length|pluralize }} found
+    </p>
+
+    {% for movie in movies %}
+    <div>
+        <h2>{{ movie.title }}</h2>
+        <p>{{ movie.description }}</p>
+        <p>Language: {{movie.language }}</p>
+        <p>Release Date: {{ movie.release_date }}</p>
+
+        <a href="{% url 'movie_detail' movie.id %}">
+            View Details
+        </a>
+    </div>
+    <hr>
+    {% empty %}
+        <p>No movies available.</p>
+    {% endfor %}
+
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+    <span>
+        Page {{page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+
+    <!--Movie Recommendation code  -->
+    <h2>Recommended For You</h2>
+    {% if recommended_movies %}
+        {% for movie in recommended_movies %}
+        <div>
+            <h3>{{ movie.title}}</h3>
+            <p>{{movie.description}}</p>
+            <p>Language: {{movie.language}}</p>
+
+            <a href="{% url 'movie_detail' movie.id %}">
+                View Details
+            </a>
+        </div>
+        {% endfor %}
+        <hr>
+    {% else %}
+        <p>No Recommendation Available Yet. </p>
+    {% endif %}
+ </body>
+ </html>

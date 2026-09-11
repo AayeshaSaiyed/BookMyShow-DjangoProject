@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{movie.title}}</title>
+</head>
+<body>
+    <h1>{{movie.title}}</h1>
+    <p>{{movie.description}}</p>
+    <p>Duration: {{movie.duration}} minutes</p>
+    <p>Release date:{{movie.release_date}}</p>
+    <p>Age Certification: {{movie.age_certification}}</p>
+    <p>Language: {{movie.language}}</p>
+
+    <p>Genres:</p>
+    <ul>{%for genre in movie.genres.all %}
+        <li>{{genre.name}}</li>
+        {% endfor %}
+    </ul>
+
+    <p>Cast:</p>
+    <ul>{% for cast in movie.cast_members.all %}
+        <li>{{cast.name}}</li>
+        {% endfor %}
+    </ul>
+    <h2>Posters:</h2>
+    {%for poster in movie.movieposter_set.all %}
+    <img src="{{poster.image.url}}"  width="200">
+    {% endfor %}
+
+    {%if trailer_url %}
+        <h2>Trailer</h2>
+
+        <iframe 
+            width="560"
+            height="315"
+            src="{{trailer_url}}" 
+            title = "{{movie.title}} Trailer"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+        </iframe>
+
+    {% endif %}
+    
+    <h2>Shows</h2>
+    {%for show in shows %}
+        <div>
+            <h3>{{ show.theatre.name }}</h3>
+            <p>{{ show.show_date }}</p>
+            <p>{{ show.show_time }}</p>
+            <p>{{ show.price }}</p>
+            <p>Average Rating:
+                {% if average_rating %}
+                    ⭐{{ average_rating|floatformat:1 }}/5
+                {% else %}
+                    No ratings yet
+                {% endif %}
+                </p>
+            
+
+            <a href="{% url 'select_seats' show.id %}">
+                <button>Book Now</button>
+            </a>
+
+    {% empty %}
+        <p>No Show Available</p>
+    {% endfor %}
+
+    <h2>Reviews</h2>
+            {% for review in reviews %}
+                <div>
+                    <h3>{{ review.user.username }}</h3>
+
+                    {% if review.is_verified_viewer %}
+                        <span>✔ Verified Viewer</span>
+                    {% endif %}
+                    <p>Rating: ⭐{{movie.rating}}/5</p>
+                    <p>{{review.comment}}</p>
+
+                    
+                    {% if review.user == request.user %}
+                     <a href="{% url 'edit_review' review.id %}">Edit Review</a>
+                    {% endif %}
+                </div>
+                <form method = "POST" action="{%url 'report_review' review.id %}">
+                {% csrf_token %}
+                <button type="submit">Report</button>
+            </form>  
+            {% empty %}
+                <p>No review yet.</p>  
+            {% endfor %}   
+        
+        </div>
+        <br>
+        
+    <a href="{% url 'add_review' movie.id %}" >Write a Review</a>
+
+    <br><br>
+
+    <h2>Similar Movies</h3>
+    {% if similar_movies %}
+        {% for similar_movie in similar_movies %}
+            <div>
+                <h3>{{ similar_movie.title }}</h3>
+                <p>{{ similar_movie.description }}</p>
+                <p>Language: {{ similar_movie.language }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+    <p>No similar movies found.</p>
+    {% endif %}
+
+    <h2>Trending Movies</h2>
+    {% if trending_movies %}
+        {% for trending_movie in trending_movies %}
+        <div>
+            <h3>{{ trending_movie.title }}</h3>
+            <p>{{ trending_movie.description }}</p>
+            <p>Language: {{ trending_movie.language }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No Trending Movies Available.</p>
+    {% endif %}
+
+    <h2>Recently Recently Movies</h2>
+    {% if recent_movies %}
+        {% for recent_movie in recent_movies %}
+        <div>
+            <h3>{{ recent_movie.title }}</h3>
+            <p>{{ recent_movie.decription }}</p>
+            <p>Release_date : {{ recent_movie.release_date }}</p>
+            <p>Language: {{ recent_movie.language }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No recently released movies available.</p>
+    {% endif %}
+</body>
+</html>

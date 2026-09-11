@@ -1,0 +1,27 @@
+# Environment variables / secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django
+db.sqlite3
+
+
+# Media / generated files
+media/tickets/
+
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
