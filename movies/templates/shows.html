@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shows</title>
+</head>
+<body>
+    <h1>Available Shows:</h1>
+
+    {%for show in shows %}
+        <div>
+            <h2>{{show.movie}}</h2>
+
+            <p>Theatre : {{show.theatre}}</p>
+            <p>Scrren : {{show.screen}}</p>
+            <p>Date : {{show.show_date}}</p>
+            <p>Price : ₹{{show.price}}</p>
+
+        </div>
+        <hr>
+    {% endfor %}
+    <hr>
+
+    <h2>My Bookings</h2>
+    {% for booking in bookings %}
+    <div>
+        <p>Movie: {{ booking.show.movie }}</p>
+        <p>Seats: {{ booking.seats }}</p>
+        <p>Date: {{ booking.show.show_date }}</p>
+
+        <a href="{% url 'download_ticket' booking.id %}">
+            Download Ticket PDF
+        </a>
+    </div>
+    <hr>
+    {% endfor %}
+</body>
+</html>

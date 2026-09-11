@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        .seat {
+            width: 50px;
+            height: 40px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .seat.selected {
+            background-color: green !important;
+            color: white !important;
+        }
+        .seat.booked{
+            background-color: red;
+            color: white;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h2>Select Seats</h2>
+
+    <h2>{{ show.movie.title }}</h2>
+    
+    <p>Theatre: {{show.theatre.name}}</p>
+    <p>Date:{{show.show_date}}</p>
+    <p>Time:{{show.show_time}}</p>
+    <p>Price: ₹{{ show.price }}</p>
+
+    <hr>
+
+    <h3>Screens</h3>
+    
+    <div class="seat_layout">
+        {% for seat in seats %}
+            {% if seat.seat_number in booked_seats %}
+                <button 
+                    class = "seat booked" disabled data-seat="{{ seat.seat_number }}">{{ seat.seat_number }} - Booked
+                </button>
+            {% elif seat.seat_number in reserved_seats %}
+                <button 
+                    class = "seat booked" disabled data-seat="{{ seat.seat_number }}">{{ seat.seat_number }} - Temporarily Reserved
+            </button>
+            {% else %}
+            <button 
+                class = "seat" data-price="{{ show.price }}" data-seat="{{ seat.seat_number }}">
+                {{ seat.seat_number }}
+            </button>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <h3>Selected Seat: <span id ="selected-seat">None</span></h3>
+    <h3>Total Price: ₹<span id = "total-price">0</span></h3>
+    <form method="POST" action ="{% url 'reserve_seat' show.id %}">
+        {% csrf_token %}
+
+        <input type="hidden" name="seats" id = "selected-seats-input">
+
+        <button type="submit" id = "payment-btn">Proceed to Payment</button>
+
+    </form>
+    
+
+    <script>
+        
+        const seats = document.querySelectorAll('.seat');
+        console.log(document.querySelectorAll('.seat'));
+        const selectedSeats = document.getElementById('selected-seat');
+        const totalPrice = document.getElementById('total-price');
+
+        seats.forEach(function(seat){
+                seat.onclick = function(){
+                    alert("Seat clicked!");
+                    seat.classList.toggle('selected');
+
+                    let selected = document.querySelectorAll(".seat.selected");
+
+                    let seatNames = [];
+                    let total = 0;
+
+                    selected.forEach(function(selectedSeat){
+                        seatNames.push(selectedSeat.dataset.seat);
+                        total += parseFloat(selectedSeat.dataset.price);
+
+                    });
+
+                    selectedSeats.innerText = 
+                        seatNames.length > 0 ? seatNames.join(","):"None";
+
+                    totalPrice.innerText = total;
+
+                    };
+
+                });
+        document.getElementById("payment-btn").onclick = function(event){
+
+        let selectedSeatForPayment = document.querySelectorAll(".seat.selected");
+        
+
+        if(selectedSeatForPayment.length === 0){
+            event.preventDefault();
+            alert("Please Select atleast one seat.");
+            return;
+        }
+        let names = [];
+
+        selectedSeatForPayment.forEach(function(selectedSeat){
+            names.push(selectedSeat.dataset.seat);
+        });
+        document.getElementById("selected-seats-input").value = names.join(",");
+    };
+    </script>
+</body>
+</html>

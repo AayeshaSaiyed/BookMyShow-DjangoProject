@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body{
+            font-family: arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+        h1{
+            margin-bottom :30px;
+        }
+        .dashboard{
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap :20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .chart-container {
+        margin-top: 30px;
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+    .chart-container h2 {
+        margin-top: 0;
+    }
+    .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .analytics-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .analytics-card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .analytics-table th,
+        .analytics-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .analytics-table th {
+            background-color: #f8f8f8;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-box h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box p {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard,
+            .analytics-grid,
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        select {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            color: black;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Admin Dashboard</h1>
+        
+        <div class="dashboard">
+            <div class ="card">
+                <h2>Total Revenue</h2>
+                <p>{{ total_revenue }}</p>
+            </div>
+            <div class ="card">
+                <h2>Total Confirmed Bookings</h2>
+                <p>{{ total_bookings }}</p>
+            </div>
+            <div class ="card">
+                <h2>Total User</h2>
+                <p>{{ total_users }}</p>
+            </div>
+            <div class ="card">
+                <h2>Total Shows</h2>
+                <p>{{ total_shows }}</p>
+            </div>
+        </div>  
+        <a href="{% url 'export_booking_csv' %}">
+            <button type="button">Export CSV</button>
+        </a>
+        <div class="chart-container">
+            <h2>Booking Trends</h2>
+            <canvas id = "bookingChart"></canvas>
+        </div>
+        <form method="GET" style="margin-top: 20px;">
+            <label>
+                From:
+                <input type="date" name="start_date" value="{{ start_date }}">
+            </label>
+            <label style="margin-left:15px;">
+                To:
+                <input type="date" name="end_date" value="{{ end_date }}">
+            </label>
+            <button type="submit"> Apply filter</button>
+        </form>
+        <form method="GET" style="margin-top: 30px;">
+            <label for="period"><strong>Revenue Period:</strong></label>
+
+            <select name="period" id="period" onchange="this.form.submit()">
+                <option value="daily {% if period == 'daily'%} selected {% endif %}>  
+                    Daily  
+                </option>
+                <option value="weekly" {% if period == 'weekly'%} selected {% endif %}>
+                    Weekly
+                </option>
+                 <option value="monthly" {% if period == 'monthly'%} selected {% endif %}>
+                    Monthly
+                </option>
+                 <option value="yearly" {% if period == 'yearly'%} selected {% endif %}>
+                    Yearly
+                </option>
+            </select>
+        </form>
+        <div class="chart-container">
+            <h2>Revenue Trends</h2>
+            <canvas id ="revenueChart"></canvas>
+        </div>
+
+        <!--Movie and theatre Analytics-->
+        <div class="analytics-grid">
+
+            <!-- Most Booked Movies -->
+             <div class="analytics-card">
+                <h2>🎬 Most Booked Movies</h2>
+
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Movie</th>
+                            <th>Bookings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movie in most_booked_movies %}
+                        <tr>
+                            <td>{{ movie.show__movie__title }}</td>
+                            <td>{{ movie.total_bookings }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan = "2"> No Booking Data Available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+             </div>
+
+             <!-- Top Performing theatres -->
+            <div class="analytics-card">
+                <h2>🏆 Top Performing Theatres</h2>
+                <table class = "analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Theatre</th>
+                            <th>Bookings</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for theatre in top_theatres %}
+                        <tr>
+                            <td>{{ theatre.show__theatre__name }}</td>
+                            <td>{{ theatre.total_bookings }}</td>
+                            <td>{{ theatre.revenue }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan ="3"> No booking data Available. </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Peak Hours -->
+         <div class="chart-container">
+            <h2>🕖 Peak Booking Hours</h2>
+
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Hour</th>
+                        <th>Total Bookings</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for hour in peak_hours %}
+                    <tr>
+                        <td>
+                            {{ hour.hour }} :00
+                        </td>
+                        <td>
+                            {{ hour.total }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan = "2">No booking data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+         </div>
+
+         <!-- Cancellation and Refund Statistics -->
+        <div class="stat-grid">
+            <div class="stat-box">
+                <h2>❌ Cancelled Bookings</h2>
+                <p>{{ cancelled_bookings }}</p>
+            </div>
+            <div class="stat-box">
+                <h2>💰 Refunded Amount</h2>
+                <p>₹ {{refunded_amount }}</p>
+            </div>
+        </div>
+
+        <!-- Theatre Occupancy -->
+         <div class="analytics-card" style = "margin-top: 30px;">
+            <h2>🎭 Theatre Occupancy</h2>
+
+            <table class = "analytics-table">
+                <thead>
+                    <tr>
+                        <th>Theatre</th>
+                        <th>Total Seats</th>
+                        <th>Booked Seats</th>
+                        <th>Occupancy</th> 
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    {% for theatre in theatre_occupancy %}
+
+                    <tr>
+                        <td>{{ theatre.name }}</td>
+                        <td>{{ theatre.total_seats }}</td>
+                        <td>{{ theatre.booked_seats }}</td>
+                        <td>{{ theatre.occupancy }}%</td>
+                    </tr>
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="4">No Theatre Data Available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+         </div>
+         <div class="chart-container">
+            <h2>User Growth</h2>
+            <canvas id = "userGrowthChart"></canvas>
+         </div>
+        <script>
+            const bookingDates = {{ booking_date|safe }};
+            const bookingCounts = {{ booking_counts|safe}};
+
+            const ctx = document.getElementById('bookingChart');
+
+            new Chart(ctx,{
+                type : 'line',
+                data:{
+                    labels: bookingDates,
+                    datasets: [{
+                        label: 'confirmed Bookings',
+                        data: bookingCounts,
+                        borderWidth:2,
+                        tension:0.3,
+                        fill:false
+                    }]
+                },
+                options:{
+                    responsive: true,
+                    scales:{
+                        y:{
+                            beginAtZero:true,
+                            ticks:{
+                                stepSize:1
+                            }
+                        }
+                    }
+                }
+            });
+            // revenue chart code .
+            const revenueDates = {{ revenue_dates|safe}};
+            const revenueAmounts = {{ revenue_amounts|safe}};
+
+            const revenueCtx = document.getElementById('revenueChart');
+
+            new Chart(revenueCtx,{
+                type:'line',
+                data:{
+                    labels: revenueDates,
+                    datasets: [{
+                        label:'Revenue (₹)',
+                        data : revenueAmounts,
+                        borderWidth:2,
+                        tension:0.3,
+                        fill:false
+                    }]
+                },
+                options: {
+                    responsive:true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }); 
+
+            console.log("user growth code is running");
+            const userGrowthDates = {{ user_growth_dates|safe }};
+            const userGrowthCounts = {{ user_growth_counts|safe }};
+
+            const userGrowthCtx = document.getElementById('userGrowthChart');
+
+            new Chart(userGrowthCtx,{
+                type:'line',
+                data:{
+                    labels: userGrowthDates,
+                    datasets:[{
+                        label:'New Users',
+                        data: userGrowthCounts,
+                        borderWidth:2,
+                        tension:0.3,
+                        fill:false
+                    }]
+                    },
+                options:{
+                    responsive:true,
+                    scales:{
+                        y:{
+                            beginAtZero:true,
+                            ticks:{
+                                stepSize:1
+                            }
+                        }
+                    }
+                }
+            });
+
+        </script>
+</body>
+</html>

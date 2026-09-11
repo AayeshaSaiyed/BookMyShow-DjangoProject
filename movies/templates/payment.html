@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment page</title>
+</head>
+<body>
+    <h1>Payment Page</h1>
+    
+    <h2>{{show.movie.title}}</h2>
+
+    <p>Theatre:{{show.theatre.name}}</p>
+    <p>Date:{{show.show_date}}</p>
+    <p>Time:{{show.show_time}}</p>
+    <p>Price per seat: ₹{{show.price}}</p>
+    <p>Selected Seats: {{ seats }}</p>
+    <p>Total Price: ₹{{ total_price }}</p>
+
+    <form action="" method="POST">
+       {% csrf_token %}
+
+        <input type="hidden" name="seats" value="{{ seats }}">
+        <input type="hidden" name="total_price" value="{{ show.price }}">
+        <button type = "button" id = "confirm_booking">Pay with Razorpay</button>
+    </form>
+    <script src = "https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        document.getElementById('confirm_booking').onclick = function(){
+           var options = {
+            "key": "{{ razorpay_key_id }}",
+            "amount":"{{ amount }}",
+            "currency": "INR",
+            "name":"BookMyShow",
+            "description":"{{ show.movie.title }}",
+            "order_id":"{{ order_id }}",
+
+            "handler":function (response){
+                fetch("{% url 'payment_success' %}",{
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id : response.razorpay_order_id,
+                        razorpay_signature :response.razorpay_signature,
+                        show_id :"{{ show.id }}",
+                        seats:"{{ seats }}",
+                        total_price:"{{ total_price }}"
+                    })
+                })
+                .then(response => response.json())
+                .then(data =>{
+                    console.log(data);
+
+                    if (data.success){
+                        alert("Payment Successful! Booking Confirmed.");
+                        window.location.href = "{% url 'show_list' %}";
+                    }else{
+                        alert(data.message);
+                    }
+                })
+                .catch(error =>{
+                    console.error(error);
+                    alert("Something went wrong.");
+                });
+            },
+
+            "theme":{
+                "color":"#3399cc"
+            }
+           };
+
+           var razorpay = new Razorpay(options);
+           razorpay.open();
+        };
+    </script>   
+</body>
+</html>
