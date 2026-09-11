@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 
 
@@ -25,12 +26,13 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qfvk!(s-q#@$4kjw%g+3d#p9qngq03=3%_pc^(v7wkrr#k6qy_'
+SECRET_KEY = os.getenv('SECRET KEY')
+DEBUG = os.getenv('DEBUG','False') == 'True'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,11 +82,11 @@ WSGI_APPLICATION = 'bookmyshow.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL')
+    )
     }
-}
+
 
 
 # Password validation
@@ -121,6 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -135,14 +139,14 @@ MAILERS = {
         'OPTIONS':{
             'host' : 'smtp.gmail.com',
             'port' : 587,
-            'username' : 'aayeshasaiyed76@gmail.com',
-            'password' : 'wxdaehcpezrghtuo',
+            'username' : os.getenv('EMAIL_HOST_USER'),
+            'password' : os.getenv('EMAIL_HOST_PASSWORD'),
             'use_tls'  : True,
         },  
     },
 }
 
-DEFAULT_FOR_EMAIL = 'wxdaehcpezrghtuo'
+DEFAULT_FOR_EMAIL = os.getenv('EMAIL_HOST_USER')
 #RAZORPAY
 RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
 RAZORPAY_KEY_SECRET =os.getenv('RAZORPAY_KEY_SECRET')
