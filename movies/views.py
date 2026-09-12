@@ -13,6 +13,7 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponse, FileResponse
 import razorpay, json,csv
 from django.conf import settings
+from django.core.mail import EmailMessage
 import os
 from .tasks import generate_ticket_pdf, send_ticket_email
 
