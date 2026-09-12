@@ -351,14 +351,49 @@ def payment_success(request):
     except razorpay.errors.SignatureVerificationError:
         return JsonResponse({
             'success':False,
-            'message':'Payment verification failed.'
+            'message':'Payment verification failed.',
+            'booking_id':booking.id
         })
     except Show.DoesNotExist:
         return JsonResponse({
             'success':False,
             'message':'Show Not Found.'
         })
-    
+@login_required
+def send_booking_email(request,booking_id):
+    try:
+        booking = Booking.objects.select_related(
+            'user',
+            'show__movie',
+            'show__theatre'
+        ).get(id=booking_id, user=request.user)
+
+        pdf_path = os.path.join(
+            settings.MEDIA_ROOT,
+            'tickets',
+            f'booking__{booking.id}.pdf'
+        )
+
+        email = EmailMessage(
+            subject=f'Movie Ticket -Booking {booking.id}',
+            body=f'''
+HELLO {booking.user.username},
+
+Your Movie Booking is Confirmed.
+
+Thank you for booking with BookMyShow!
+''',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to = [booking.user.email],
+        )
+
+        email.attach_file(pdf_path)
+        email.send()
+
+        return JsonResponse({'success':True})
+    except Exception as e:
+        print("EMAIL ERROR:",e)
+        return JsonResponse({'success':False})
 @login_required
 @user_passes_test(lambda user:user.is_staff)
 

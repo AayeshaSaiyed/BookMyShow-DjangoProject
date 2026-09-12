@@ -17,5 +17,6 @@ urlpatterns = [
     path('export-booking-csv/', views.export_booking_csv, name='export_booking_csv'),
     path('movies/',views.movie_discovery,name='movie_discovery'),
     path('download-ticket/<int:booking_id>/',views.download_ticket,name='download_ticket'),
+    path('send-booking-email/<int:booking_id>/', views.send_booking_email, name='send_booking_email'),
 
 ]
