@@ -15,7 +15,8 @@ import razorpay, json,csv
 from django.conf import settings
 from django.core.mail import EmailMessage
 import os
-import resend,base64
+import resend
+import base64
 from .tasks import generate_ticket_pdf, send_ticket_email
 
 
@@ -385,7 +386,7 @@ def send_booking_email(request,booking_id):
             "from": "onboarding@resend.dev",
             "to": [booking.user.email],
             "subject": f"Movie Ticket - Booking {booking.id}",
-            "html": f""""
+            "html": f"""
                 <h2>Movie Booking Confirmed 🎬</h2>
                 <p> Hello {booking.user.username}</p>
                 <p>Your movie booking has been successfully confirmed.</p>
@@ -395,7 +396,7 @@ def send_booking_email(request,booking_id):
             "attachments":[
                 {
                     "filename":f"ticket_{booking.id}.pdf",
-                    "content":pdf_path,
+                    "content":pdf_data,
                 }
             ],
         }
