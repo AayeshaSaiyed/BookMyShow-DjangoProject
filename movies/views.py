@@ -341,10 +341,7 @@ def payment_success(request):
             status = 'confirmed'
         )
         generate_ticket_pdf(booking.id)
-        try:
-            send_ticket_email(booking.id)
-        except Exception as e:
-            print("Email Failed:",e)
+        
         reservation.delete()
 
         return JsonResponse({
