@@ -15,6 +15,7 @@ import razorpay, json,csv
 from django.conf import settings
 from django.core.mail import EmailMessage
 import os
+import resend,base64
 from .tasks import generate_ticket_pdf, send_ticket_email
 
 
@@ -376,22 +377,30 @@ def send_booking_email(request,booking_id):
             f'booking_{booking.id}.pdf'
         )
 
-        email = EmailMessage(
-            subject=f'Movie Ticket -Booking {booking.id}',
-            body=f'''
-HELLO {booking.user.username},
+        resend.api_key = os.getenv("RESEND_API_KEY")
+        with open(pdf_path,"rb") as pdf_file:
+            pdf_data = base64.b64encode(pdf_file.read()).decode("utf-8")
 
-Your Movie Booking is Confirmed.
-
-Thank you for booking with BookMyShow!
-''',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to = [booking.user.email],
-        )
-
-        email.attach_file(pdf_path)
-        email.send()
-
+        params = {
+            "from": "onboarding@resend.dev",
+            "to": [booking.user.email],
+            "subject": f"Movie Ticket - Booking {booking.id}",
+            "html": f""""
+                <h2>Movie Booking Confirmed 🎬</h2>
+                <p> Hello {booking.user.username}</p>
+                <p>Your movie booking has been successfully confirmed.</p>
+                <p><strong>Booking ID:</strong>{booking.id}</p>
+                <p>Thank you for booking with BookMyShow</p>
+            """,
+            "attachments":[
+                {
+                    "filename":f"ticket_{booking.id}.pdf",
+                    "content":pdf_path,
+                }
+            ],
+        }
+    
+        resend.Emails.send(params)
         return JsonResponse({'success':True})
     except Exception as e:
         print("EMAIL ERROR:",e)
