@@ -346,13 +346,14 @@ def payment_success(request):
 
         return JsonResponse({
             'success':True,
-            'message':'Payment verified and booking confirmed.'
+            'message':'Payment verified and booking confirmed.',
+            'booking_id':booking.id
         })
     except razorpay.errors.SignatureVerificationError:
         return JsonResponse({
             'success':False,
-            'message':'Payment verification failed.',
-            'booking_id':booking.id
+            'message':'Payment verification failed.'
+            
         })
     except Show.DoesNotExist:
         return JsonResponse({
