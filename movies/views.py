@@ -340,7 +340,7 @@ def payment_success(request):
             total_price = total_price,
             status = 'confirmed'
         )
-        generate_ticket_pdf.delay(booking.id)
+        generate_ticket_pdf(booking.id)
         reservation.delete()
 
         return JsonResponse({
