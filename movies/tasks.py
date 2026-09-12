@@ -64,7 +64,7 @@ def generate_ticket_pdf(booking_id):
     )
 
     pdf.save()
-    send_ticket_email.delay(booking.id)
+    send_ticket_email(booking.id)
 
     return pdf_path
 
