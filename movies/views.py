@@ -373,7 +373,7 @@ def send_booking_email(request,booking_id):
         pdf_path = os.path.join(
             settings.MEDIA_ROOT,
             'tickets',
-            f'booking__{booking.id}.pdf'
+            f'booking_{booking.id}.pdf'
         )
 
         email = EmailMessage(
